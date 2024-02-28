@@ -6,7 +6,7 @@
 //! ```
 
 #![allow(non_snake_case, unused)]
-use dioxus::prelude::*;
+use dioxus::{html::br, prelude::*};
 use dioxus_fullstack::prelude::*;
 
 fn main() {
@@ -21,8 +21,9 @@ fn main() {
 }
 
 fn App(cx: Scope) -> Element {
-
     let mut count = use_state(cx, || 0);
+    // let mut count1 = use_future(cx, (), |_| async { get_server_data1().await });
+    let mut count2 = use_server_future(cx, (), |_| async { get_server_data2().await })?;
 
     cx.render(rsx! {
         h1 { "High-Five counter: {count}" }
@@ -40,6 +41,10 @@ fn App(cx: Scope) -> Element {
             },
             "Double"
         }
+        br {}
+        br {}
+        
+        "server data is {count2.value():?}"
     })
 }
 
@@ -53,3 +58,17 @@ async fn double_server(number: i32) -> Result<i32, ServerFnError> {
     Ok(result)
 }
 
+
+#[server]
+async fn get_server_data1() -> Result<String, ServerFnError> {
+    // Access a database
+    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    Ok("Hello from the server!".to_string())
+}
+
+#[server]
+async fn get_server_data2() -> Result<String, ServerFnError> {
+    // Access a database
+    tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+    Ok("Hello from the server!".to_string())
+}
