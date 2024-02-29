@@ -3,23 +3,22 @@
 // cargo run --bin server --features server
 // ```
 
-use axum_desktop::*;
-use dioxus_fullstack::prelude::*;
+use axum::*;
+use axum::{response::Html, routing::get, Router};
+use dioxus::prelude::*;
 // use server_fn::axum::register_explicit;
 
 #[tokio::main]
 async fn main() {
-  let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 8080));
-
-    let _ = PostServerData::register_explicit();
-    let _ = GetServerData::register_explicit();
-
-    axum::Server::bind(&addr)
-        .serve(
-            axum::Router::new()
-                .register_server_fns("")
-                .into_make_service(),
-        )
+    let listener = tokio::net::TcpListener::bind("127.0.0.01:8080")
         .await
         .unwrap();
+
+    let app = Router::new().route("/", get(handler));
+    println!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
+}
+
+async fn handler() -> Html<&'static str> {
+    Html("<h1>Hello, World!</h1>")
 }
